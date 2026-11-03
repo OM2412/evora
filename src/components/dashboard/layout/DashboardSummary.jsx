@@ -3,9 +3,10 @@ import './DashboardSummary.css'
 function DashboardSummary({
   candidateCount,
   recommendedCount,
-  decisionFactorCount,
   optimizationGoal,
   minimumSpacing,
+  validationMetrics,
+  disqualifiedCount = 0,
   isRunningAnalysis,
 }) {
   const formatGoal = (goal) => {
@@ -14,6 +15,7 @@ function DashboardSummary({
       demand: 'Demand Priority',
       renewable: 'Renewable Priority',
       coverage: 'Coverage Priority',
+      custom: 'Custom MCDA',
     }
 
     return labels[goal] || 'Balanced'
@@ -21,64 +23,61 @@ function DashboardSummary({
 
   return (
     <div className="dashboard-summary">
-
       <div className="dashboard-summary__item">
-        <span>
-          Candidate Sites
-        </span>
-
+        <span>Candidates</span>
         <strong>
           {candidateCount}
+          {disqualifiedCount > 0 ? ` (${disqualifiedCount} excl.)` : ''}
         </strong>
       </div>
 
       <div className="dashboard-summary__divider" />
 
       <div className="dashboard-summary__item">
-        <span>
-          Recommended
-        </span>
-
-        <strong>
-          {recommendedCount}
-        </strong>
-      </div>
-
-      <div className="dashboard-summary__divider" />
-
-      <div className="dashboard-summary__item">
-        <span>
-          Decision Factors
-        </span>
-
-        <strong>
-          {decisionFactorCount}
-        </strong>
+        <span>Recommended</span>
+        <strong style={{ color: '#72f595' }}>{recommendedCount}</strong>
       </div>
 
       <div className="dashboard-summary__divider" />
 
       <div className="dashboard-summary__item dashboard-summary__item--wide">
-        <span>
-          Optimization
-        </span>
-
-        <strong>
-          {formatGoal(optimizationGoal)}
-        </strong>
+        <span>Optimization</span>
+        <strong>{formatGoal(optimizationGoal)} ({minimumSpacing} km)</strong>
       </div>
 
-      <div className="dashboard-summary__divider" />
+      {validationMetrics && (
+        <>
+          <div className="dashboard-summary__divider" />
 
-      <div className="dashboard-summary__item">
-        <span>
-          Min. Spacing
-        </span>
+          <div className="dashboard-summary__item dashboard-summary__item--wide">
+            <span>Demand Covered (2.5km)</span>
+            <strong>
+              {validationMetrics.demandCoveredBeforePct}% →{' '}
+              <span style={{ color: '#72f595' }}>
+                {validationMetrics.demandCoveredAfterPct}% (+{validationMetrics.coverageGainPct}%)
+              </span>
+            </strong>
+          </div>
 
-        <strong>
-          {minimumSpacing} km
-        </strong>
-      </div>
+          <div className="dashboard-summary__divider" />
+
+          <div className="dashboard-summary__item">
+            <span>Avg Charger Dist</span>
+            <strong>
+              {validationMetrics.avgDistBeforeKm} → {validationMetrics.avgDistAfterKm} km
+            </strong>
+          </div>
+
+          <div className="dashboard-summary__divider" />
+
+          <div className="dashboard-summary__item">
+            <span>Portfolio Solar</span>
+            <strong style={{ color: '#f4da64' }}>
+              {validationMetrics.avgRenewableScore}/100
+            </strong>
+          </div>
+        </>
+      )}
 
       <div className="dashboard-summary__divider" />
 
@@ -90,20 +89,11 @@ function DashboardSummary({
               : ''
           }`}
         />
-
         <div>
-          <span>
-            Analysis Status
-          </span>
-
-          <strong>
-            {isRunningAnalysis
-              ? 'Running'
-              : 'Ready'}
-          </strong>
+          <span>Analysis Status</span>
+          <strong>{isRunningAnalysis ? 'Running' : 'Ready'}</strong>
         </div>
       </div>
-
     </div>
   )
 }
